@@ -1,0 +1,112 @@
+-- programs
+entrypoints Program ;
+
+Prog.      Program ::= [Stmt];
+
+-- types
+Int.       Type  ::= "int" ;
+
+Bool.      Type  ::= "bool" ;
+
+String.    Type  ::= "string" ;
+
+-- statements
+
+Block.     Blck ::= "{" [Stmt] "}" ;
+
+separator  Stmt "" ;
+
+Empty.     Stmt ::= ";" ;
+
+BStmt.     Stmt ::= Blck ;
+
+VDecl.     Stmt ::= Type [Item] ";" ;
+
+FDecl.     Stmt ::= Type Ident "(" [Arg] ")" Blck ;
+
+ArgVal.    Arg ::= Type Ident ;
+
+ArgRef.    Arg ::= Type "ref" Ident ;
+
+separator  Arg "," ;
+
+NoInit.    Item ::= Ident ; 
+
+Init.      Item ::= Ident "=" Expr ;
+
+separator nonempty Item "," ;
+
+Assign.    Stmt ::= Ident "=" Expr ";" ;
+
+Ret.       Stmt ::= "return" Expr ";" ;
+
+Cont.      Stmt ::= "continue" ";" ;
+
+Break.     Stmt ::= "break" ";" ;
+
+Cond.      Stmt ::= "if" "(" Expr ")" Stmt ;
+
+CondElse.  Stmt ::= "if" "(" Expr ")" Stmt "else" Stmt ;
+
+While.     Stmt ::= "while" "(" Expr ")" Stmt ;
+
+Print.     Stmt ::= "print" Expr ";" ;
+
+SExpr.     Stmt ::= Expr ";" ;
+
+-- expressions
+EVar.      Expr6 ::=  Ident ;
+
+ELitInt.   Expr6 ::=  Integer ;
+
+ELitTrue.  Expr6 ::=  "true" ;
+
+ELitFalse. Expr6 ::=  "false" ;
+
+EApp.      Expr6 ::= Ident "(" [Expr] ")" ;
+
+EString.   Expr6 ::= String ;
+
+ENeg.      Expr5 ::= "-" Expr6 ;
+
+ENot.      Expr5 ::= "!" Expr6 ;
+
+EMul.      Expr4 ::= Expr4 MulOp Expr5 ;
+
+EAdd.      Expr3 ::= Expr3 AddOp Expr4 ;
+
+ERel.      Expr2 ::= Expr2 RelOp Expr3 ;
+
+EAnd.      Expr1 ::= Expr2 "&&" Expr1 ;
+
+EOr.       Expr ::=  Expr1 "||" Expr ;
+
+coercions Expr 6 ;
+
+separator Expr "," ;
+
+-- operators
+OpAdd.     AddOp ::= "+" ;
+
+OpSub.     AddOp ::= "-" ;
+
+OpMul.     MulOp ::= "*" ;
+
+OpDiv.     MulOp ::= "/" ;
+
+OpLt.      RelOp ::= "<" ;
+
+OpLe.      RelOp ::= "<=" ;
+
+OpGt.      RelOp ::= ">" ;
+
+OpGe.      RelOp ::= ">=" ;
+
+OpEq.      RelOp ::= "==" ;
+
+OpNeq.     RelOp ::= "!=" ;
+
+-- comments
+comment "//"        ;
+
+comment "/*" "*/"   ;
