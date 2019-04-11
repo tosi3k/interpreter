@@ -4,11 +4,11 @@ entrypoints Program ;
 Prog.      Program ::= [Stmt];
 
 -- types
-Int.       Type  ::= "int" ;
+TInt.       Type  ::= "int" ;
 
-Bool.      Type  ::= "bool" ;
+TBool.      Type  ::= "bool" ;
 
-String.    Type  ::= "string" ;
+TString.    Type  ::= "string" ;
 
 -- statements
 
