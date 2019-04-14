@@ -107,29 +107,29 @@ interpretExpr (EApp funId exprs) = let
     val@(VFun (_, args, stmts, fEnv)) <- getValue funId
     envWithArgs <- enrichEnv args exprs fEnv
     newEnv <- enrichEnv2 funId val envWithArgs
-    (_, mval) <- local (const newEnv) $ interpretStmts stmts
+    (_, mval, _, _) <- local (const newEnv) $ interpretStmts stmts
     case mval of
       Nothing -> throwError MissingReturn
       Just val -> return val
 
 
 
-interpretStmt :: Stmt -> SemanticState (Env, Maybe Value)
+interpretStmt :: Stmt -> SemanticState (Env, Maybe Value, Bool, Bool)
 interpretStmt Empty = do
   env <- ask
-  return (env, Nothing)
+  return (env, Nothing, False, False)
 
 interpretStmt (Print expr) = do
   env <- ask
   store <- get
   val <- interpretExpr expr
   liftIO $ putStrLn $ show val
-  return (env, Nothing)
+  return (env, Nothing, False, False)
 
 interpretStmt (SExpr expr) = do
   _ <- interpretExpr expr
   env <- ask
-  return (env, Nothing)
+  return (env, Nothing, False, False)
 
 interpretStmt (Cond expr stmt) = do
   (VBool b) <- interpretExpr expr
@@ -137,7 +137,7 @@ interpretStmt (Cond expr stmt) = do
   if b then
     interpretStmt stmt
   else
-    return (env, Nothing)
+    return (env, Nothing, False, False)
 
 interpretStmt (CondElse expr stmt1 stmt2) = do
   (VBool b) <- interpretExpr expr
@@ -147,22 +147,26 @@ interpretStmt w@(While expr stmt) = do
   env <- ask
   (VBool b) <- interpretExpr expr
   if b then do
-    (env, mval) <- interpretStmt stmt
-    case mval of
+    (env, mval, breakBit, contBit) <- interpretStmt stmt
+    if breakBit then
+      return (env, mval, False, False)
+    else if contBit then
+      interpretStmt w
+    else case mval of
       Nothing -> interpretStmt w
-      _ -> return (env, mval)
+      _ -> return (env, mval, False, False)
   else
-    return (env, Nothing)
+    return (env, Nothing, False, False)
 
 interpretStmt (BStmt (Block stmts)) = do
   env <- ask
-  (_, mval) <- interpretStmts stmts
-  return (env, mval)
+  (_, mval, breakBit, contBit) <- interpretStmts stmts
+  return (env, mval, breakBit, contBit)
 
 interpretStmt (Ret expr) = do
   env <- ask
   val <- interpretExpr expr
-  return (env, Just val)
+  return (env, Just val, False, False)
 
 interpretStmt (Assign ident expr) = do
   env <- ask
@@ -170,11 +174,11 @@ interpretStmt (Assign ident expr) = do
   store <- get
   let loc = env ! ident
   put $ insert loc val store
-  return (env, Nothing)
+  return (env, Nothing, False, False)
 
 interpretStmt (VDecl _ []) = do
   env <- ask
-  return (env, Nothing)
+  return (env, Nothing, False, False)
 interpretStmt (VDecl vtype (item:items)) = let
     defaultValue :: Type -> Value
     defaultValue TInt = VInt 0
@@ -194,26 +198,29 @@ interpretStmt (VDecl vtype (item:items)) = let
 interpretStmt (FDecl funType ident args (Block stmts)) = do
   env <- ask
   newEnv <- declVal ident $ VFun (funType, args, stmts, env)
-  return (newEnv, Nothing)
+  return (newEnv, Nothing, False, False)
 
--- interpretStmt Cont = do
+interpretStmt Break = do
+  env <- ask
+  return (env, Nothing, True, False)
 
--- interpretStmt Break = do
+interpretStmt Cont = do
+  env <- ask
+  return (env, Nothing, False, True)
 
 
-
-interpretStmts :: [Stmt] -> SemanticState (Env, Maybe Value)
+interpretStmts :: [Stmt] -> SemanticState (Env, Maybe Value, Bool, Bool)
 interpretStmts (stmt:stmts) = do
-  (env, mval) <- interpretStmt stmt
-  if isNothing mval then
-    local (const env) (interpretStmts stmts)
+  aux@(env, mval, breakBit, contBit) <- interpretStmt stmt
+  if breakBit || contBit || isJust mval then
+    return aux
   else
-    return (env, mval)
+    local (const env) (interpretStmts stmts)
 interpretStmts [] = do
   env <- ask
-  return (env, Nothing)
+  return (env, Nothing, False, False)
 
 
 
-interpretProgram :: Program -> IO (Either RuntimeError ((Env, Maybe Value), Store))
+interpretProgram :: Program -> IO (Either RuntimeError ((Env, Maybe Value, Bool, Bool), Store))
 interpretProgram (Prog stmts) = runExceptT $ runStateT (runReaderT (interpretStmts stmts) empty) empty
