@@ -1,4 +1,6 @@
+{- quick & dirty interpreter (most magic happens here) -}
 module Interpreter where
+
 
 import Data.Maybe
 import Data.Map
@@ -6,12 +8,7 @@ import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
 
-import LexGrammar
-import ParGrammar
-import SkelGrammar
-import PrintGrammar
 import AbsGrammar
-import ErrM
 import InterpreterTypes
 
 interpretExpr :: Expr -> SemanticState Value
@@ -47,10 +44,7 @@ interpretExpr (EMul expr1 mulOp expr2) = do
       else
         throwError ZeroDivision
 
-interpretExpr (EVar ident) = do
-  env <- ask
-  store <- get
-  return $ store ! (env ! ident)
+interpretExpr (EVar ident) = getValue ident
 
 interpretExpr (ENot expr) = do
   (VBool b) <- interpretExpr expr
@@ -109,11 +103,17 @@ interpretExpr (EApp funId exprs) = let
     newEnv <- enrichEnv2 funId val envWithArgs
     (_, mval, _, _) <- local (const newEnv) $ interpretStmts stmts
     case mval of
-      Nothing -> throwError MissingReturn
+      Nothing -> throwError $ MissingReturn funId
       Just val -> return val
 
 
-
+{-
+ - output is a 4-tuple containing following information, respectively:
+ - 1) hitherto environment,
+ - 2) possible value produced by a "return" statement,
+ - 3) bit indicating if "break" statement was launched,
+ - 4) bit indicating if "continue" statement was launched.
+-}
 interpretStmt :: Stmt -> SemanticState (Env, Maybe Value, Bool, Bool)
 interpretStmt Empty = do
   env <- ask
@@ -121,13 +121,12 @@ interpretStmt Empty = do
 
 interpretStmt (Print expr) = do
   env <- ask
-  store <- get
   val <- interpretExpr expr
   liftIO $ putStrLn $ show val
   return (env, Nothing, False, False)
 
 interpretStmt (SExpr expr) = do
-  _ <- interpretExpr expr
+  interpretExpr expr
   env <- ask
   return (env, Nothing, False, False)
 

@@ -1,0 +1,50 @@
+int factorial(int n) {
+    if (n <= 0) {
+        return 1;
+    }
+    else {
+        return n * factorial(n - 1);
+    }
+}
+print factorial(5) == 120;
+print factorial(factorial(3)) == 720;
+
+int dumbFibonacci(int n) {
+    if (n <= 0) {
+        return 0;
+    }
+    else if (n == 1) {
+        return 1;
+    }
+    else {
+        return dumbFibonacci(n - 1) + dumbFibonacci(n - 2);
+    }
+}
+print dumbFibonacci(9) == 34;
+
+int lessDumbFibonacci(int n) {
+    if (n <= 0) {
+        return 0;
+    }
+    int a = 0, b = 1, i = 0;
+    while (i < n - 1) {
+        i = i + 1;
+        int tmp = b;
+        b = a + b;
+        a = tmp;
+    }
+    return b;
+}
+print lessDumbFibonacci(9) == 34;
+
+int ack(int m, int n) {
+    if (m == 0) {
+        return n + 1;
+    } else if (n == 0) {
+        return ack(m - 1, 1);
+    } else {
+        return ack(m - 1, ack(m, n - 1));
+    }
+}
+print ack(4, 0) == 13;
+print ack(3, 2) == 29;

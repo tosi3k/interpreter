@@ -1,0 +1,36 @@
+int s = 5;
+{
+	s = 4;
+	print s == 4;
+}
+print s == 4;
+
+int t = 10;
+{
+	int t = 7;
+	print t == 7;
+}
+print t == 10;
+
+
+
+int x = 4;
+{
+	x = x + 1;
+	print x == 5;
+	{
+		x = x + 1;
+		print x == 6;
+		{
+			int x;
+			x = x + 1;
+			print x == 1;
+			{
+				x = x + 1;
+				print x == 2;
+			}
+		}
+	}
+	print x == 6;
+}
+print x == 6;

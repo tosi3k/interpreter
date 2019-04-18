@@ -1,0 +1,24 @@
+int incWrapper(int a)
+{
+    int properInc(int b)
+    {
+        return b + 1;
+    }
+    return properInc(a);
+}
+
+print incWrapper(41) == 42;
+print incWrapper(incWrapper(40)) == 42;
+
+int i_solemny_swear_that_i_return_17() {
+	int x = 17 * 17;
+	return 17;
+
+	return 0;
+	while (true) {
+		x = x - 1;
+	}
+}
+print i_solemny_swear_that_i_return_17() == 17;
+
+// TODO
