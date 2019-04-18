@@ -1,0 +1,6 @@
+int f() {
+	int xD = 4 + 1;
+	return false;
+}
+
+print f();

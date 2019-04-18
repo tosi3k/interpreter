@@ -1,0 +1,14 @@
+int cond_neg(int a, bool b) {
+	if (!b) {
+		return -a;
+	} else {
+		return a;
+	}
+}
+
+
+print cond_neg(5, false) == -5;
+
+print cond_neg(5, true) == 5;
+
+print cond_neg(5, 1) == 5;

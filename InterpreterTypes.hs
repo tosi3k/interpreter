@@ -52,12 +52,14 @@ newLoc = do
     0 -> return 0
     _ -> return $ 1 + (fst $ findMax store)
 
+{-  -}
 getValue :: Ident -> SemanticState Value
 getValue ident = do
   store <- get
   env <- ask
   return $ store ! (env ! ident)
 
+{- return an environment with newly declared identifier -}
 declVal :: Ident -> Value -> SemanticState Env
 declVal ident val = do
   env <- ask
@@ -65,16 +67,3 @@ declVal ident val = do
   loc <- newLoc
   put $ insert loc val store
   return $ insert ident loc env
-
-declRefArg :: Ident -> Ident -> Env -> SemanticState Env
-declRefArg refIdent argIdent modEnv = do
-  env <- ask
-  let refLoc = env ! refIdent
-  return $ insert argIdent refLoc modEnv
-
-declValArg :: Ident -> Value -> Env -> SemanticState Env
-declValArg ident val modEnv = do
-  store <- get
-  loc <- newLoc
-  put $ insert loc val store
-  return $ insert ident loc modEnv

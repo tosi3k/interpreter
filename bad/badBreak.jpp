@@ -1,0 +1,6 @@
+int function(int a) {
+	break;
+	return a;
+}
+
+int a = function(3);

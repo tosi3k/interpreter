@@ -1,0 +1,12 @@
+int xyzt(int ref a, int b) {
+	a = a + b;
+	return a;
+}
+
+int x = 4, y = 1;
+
+print xyzt(x, y) == 5;
+
+print xyzt(x, 1) == 6;
+
+print xyzt(4, 1) == 5;

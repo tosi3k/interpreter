@@ -1,0 +1,12 @@
+int function(int a) {
+	while (a > 0) {
+		a = a - 1;
+		if (a == 0) {
+			break;
+		}
+	}
+	continue;
+	return a;
+}
+
+int a = function(3);

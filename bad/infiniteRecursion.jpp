@@ -1,0 +1,5 @@
+bool stupidRec() {
+	return stupidRec();
+}
+
+print stupidRec();

@@ -83,24 +83,39 @@ interpretExpr (ERel expr1 relOp expr2) = let
       (VBool a, VBool b) -> return $ VBool $ evalOp relOp a b
 
 interpretExpr (EApp funId exprs) = let
-    enrichEnv :: [Arg] -> [Expr] -> Env -> SemanticState Env
-    enrichEnv [] [] env = return env
-    enrichEnv ((ArgVal _ ident):args) (expr:exprs) env = do
+    {- supply environment with new argument passed by reference -}
+    declRefArg :: Ident -> Ident -> Env -> SemanticState Env
+    declRefArg refIdent argIdent modEnv = do
+      env <- ask
+      let refLoc = env ! refIdent
+      return $ insert argIdent refLoc modEnv
+
+    {- supply environment with new argument passed by value (hence new location) -}
+    declValArg :: Ident -> Value -> Env -> SemanticState Env
+    declValArg ident val modEnv = do
+      store <- get
+      loc <- newLoc
+      put $ insert loc val store
+      return $ insert ident loc modEnv
+
+    addArgsToEnv :: [Arg] -> [Expr] -> Env -> SemanticState Env
+    addArgsToEnv [] [] env = return env
+    addArgsToEnv ((ArgVal _ ident):args) (expr:exprs) env = do
       val <- interpretExpr expr
       newEnv <- declValArg ident val env
-      enrichEnv args exprs newEnv
-    enrichEnv ((ArgRef _ ident):args) ((EVar refIdent):exprs) env = do
+      addArgsToEnv args exprs newEnv
+    addArgsToEnv ((ArgRef _ ident):args) ((EVar refIdent):exprs) env = do
       newEnv <- declRefArg refIdent ident env
-      enrichEnv args exprs newEnv
+      addArgsToEnv args exprs newEnv
 
-    enrichEnv2 :: Ident -> Value -> Env -> SemanticState Env
-    enrichEnv2 ident val@(VFun _) env = do
+    addFunToEnv :: Ident -> Value -> Env -> SemanticState Env
+    addFunToEnv ident val@(VFun _) env = do
       env <- declValArg ident val env
       return env
   in do
     val@(VFun (_, args, stmts, fEnv)) <- getValue funId
-    envWithArgs <- enrichEnv args exprs fEnv
-    newEnv <- enrichEnv2 funId val envWithArgs
+    envWithArgs <- addArgsToEnv args exprs fEnv
+    newEnv <- addFunToEnv funId val $ envWithArgs
     (_, mval, _, _) <- local (const newEnv) $ interpretStmts stmts
     case mval of
       Nothing -> throwError $ MissingReturn funId

@@ -23,15 +23,15 @@ inferType (EString _) = return MockString
 
 inferType (ENeg expr) = do
   exprType <- inferType expr
-  if exprType == MockBool then
-    return MockBool
+  if exprType == MockInt then
+    return MockInt
   else
     throwError BadTypeInExpr
 
 inferType (ENot expr) = do
   exprType <- inferType expr
-  if exprType == MockInt then
-    return MockInt
+  if exprType == MockBool then
+    return MockBool
   else
     throwError BadTypeInExpr
 
