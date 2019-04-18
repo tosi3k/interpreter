@@ -1,7 +1,8 @@
 all:
 	happy -gca ParGrammar.y
 	alex -g LexGrammar.x
-	ghc --make TestGrammar.hs -o TestGrammar
+	ghc --make TestGrammar.hs -o interpreter
+	# ghc --make TestGrammar.hs -o TestGrammar
 
 clean:
 	-rm -f *.log *.aux *.hi *.o *.dvi

@@ -1,7 +1,7 @@
 module Main where
 
 
-import System.IO(stdin, hGetContents)
+import System.IO(stdin, stderr, hPutStrLn, hPutStr, hGetContents)
 import System.Environment(getArgs, getProgName)
 import System.Exit(exitFailure, exitSuccess)
 
@@ -17,38 +17,24 @@ type ParseFun a = [Token] -> Err a
 
 myLLexer = myLexer
 
-type Verbosity = Int
+runFile :: ParseFun Program -> FilePath -> IO ()
+runFile p f = readFile f >>= run p
 
-putStrV :: Verbosity -> String -> IO ()
-putStrV v s = if v > 1 then putStrLn s else return ()
-
-runFile :: Verbosity -> ParseFun Program -> FilePath -> IO ()
-runFile v p f = putStrLn f >> readFile f >>= run v p
-
-run :: Verbosity -> ParseFun Program -> String -> IO ()
-run v p s = let ts = myLLexer s in case p ts of
-  Bad s   -> do putStrLn "\nParse failed...\n"
-                putStrV v "Tokens:"
-                putStrV v $ show ts
-                putStrLn s
+run :: ParseFun Program -> String -> IO ()
+run p s = let ts = myLLexer s in case p ts of
+  Bad s   -> do hPutStrLn stderr "Parse failed."
                 exitFailure
   Ok tree -> do staticCheckResult <- staticCheck tree
                 case staticCheckResult of
-                  Left err -> do putStrLn "Static checking error..."
-                                 putStrLn $ show err
+                  Left err -> do hPutStr stderr "Static checking error: "
+                                 hPutStrLn stderr $ show err
                                  exitFailure
                   Right _  -> do it <- interpretProgram tree
                                  case it of
-                                   Left err -> do putStrLn "Runtime error..."
-                                                  putStrLn $ show err
+                                   Left err -> do hPutStr stderr "Runtime error: "
+                                                  hPutStrLn stderr $ show err
                                                   exitFailure
                                    Right _  -> do exitSuccess
-
-
-showTree :: (Show a, Print a) => Int -> a -> IO ()
-showTree v tree = do
-  putStrV v $ "\n[Abstract Syntax]\n\n" ++ show tree
-  putStrV v $ "\n[Linearized tree]\n\n" ++ printTree tree
 
 usage :: IO ()
 usage = do
@@ -56,16 +42,14 @@ usage = do
     [ "usage: Call with one of the following argument combinations:"
     , "  --help          Display this help message."
     , "  (no arguments)  Parse stdin verbosely."
-    , "  (files)         Parse content of files verbosely."
-    , "  -s (files)      Silent mode. Parse content of files silently."
+    , "  (file)          Parse content of a file verbosely."
     ]
-  exitFailure
+  exitSuccess
 
 main :: IO ()
 main = do
   args <- getArgs
   case args of
     ["--help"] -> usage
-    [] -> hGetContents stdin >>= run 2 pProgram
-    "-s":fs -> mapM_ (runFile 0 pProgram) fs
-    fs -> mapM_ (runFile 2 pProgram) fs
+    [] -> hGetContents stdin >>= run pProgram
+    fs -> mapM_ (runFile pProgram) fs
