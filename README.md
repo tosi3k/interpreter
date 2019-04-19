@@ -8,7 +8,7 @@ The whole project is a coursework for *Programming languages and paradigms* cour
 
 ## Requirements
 
-The project requires `mtl` package to build. You can download the package through *cabal*.
+The project requires `ghc` compiler and `mtl` package installed to build. You can download the package through *cabal*.
 
 ## Technical aspects of the project
 
