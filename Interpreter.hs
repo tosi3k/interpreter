@@ -9,9 +9,9 @@ import Control.Monad.Reader
 import Control.Monad.State
 
 import AbsGrammar
-import InterpreterTypes
+import InterpreterUtils
 
-interpretExpr :: Expr -> SemanticState Value
+interpretExpr :: Expr -> InterpreterMonad Value
 interpretExpr (ELitTrue) = return $ VBool True
 
 interpretExpr (ELitFalse) = return $ VBool False
@@ -84,21 +84,21 @@ interpretExpr (ERel expr1 relOp expr2) = let
 
 interpretExpr (EApp funId exprs) = let
     {- supply environment with new argument passed by reference -}
-    declRefArg :: Ident -> Ident -> Env -> SemanticState Env
+    declRefArg :: Ident -> Ident -> Env -> InterpreterMonad Env
     declRefArg refIdent argIdent modEnv = do
       env <- ask
       let refLoc = env ! refIdent
       return $ insert argIdent refLoc modEnv
 
     {- supply environment with new argument passed by value (hence new location) -}
-    declValArg :: Ident -> Value -> Env -> SemanticState Env
+    declValArg :: Ident -> Value -> Env -> InterpreterMonad Env
     declValArg ident val modEnv = do
       store <- get
       loc <- newLoc
       put $ insert loc val store
       return $ insert ident loc modEnv
 
-    addArgsToEnv :: [Arg] -> [Expr] -> Env -> SemanticState Env
+    addArgsToEnv :: [Arg] -> [Expr] -> Env -> InterpreterMonad Env
     addArgsToEnv [] [] env = return env
     addArgsToEnv ((ArgVal _ ident):args) (expr:exprs) env = do
       val <- interpretExpr expr
@@ -108,7 +108,7 @@ interpretExpr (EApp funId exprs) = let
       newEnv <- declRefArg refIdent ident env
       addArgsToEnv args exprs newEnv
 
-    addFunToEnv :: Ident -> Value -> Env -> SemanticState Env
+    addFunToEnv :: Ident -> Value -> Env -> InterpreterMonad Env
     addFunToEnv ident val@(VFun _) env = do
       env <- declValArg ident val env
       return env
@@ -129,7 +129,7 @@ interpretExpr (EApp funId exprs) = let
  - 3) bit indicating if "break" statement was launched,
  - 4) bit indicating if "continue" statement was launched.
 -}
-interpretStmt :: Stmt -> SemanticState (Env, Maybe Value, Bool, Bool)
+interpretStmt :: Stmt -> InterpreterMonad (Env, Maybe Value, Bool, Bool)
 interpretStmt Empty = do
   env <- ask
   return (env, Nothing, False, False)
@@ -223,7 +223,7 @@ interpretStmt Cont = do
   return (env, Nothing, False, True)
 
 
-interpretStmts :: [Stmt] -> SemanticState (Env, Maybe Value, Bool, Bool)
+interpretStmts :: [Stmt] -> InterpreterMonad (Env, Maybe Value, Bool, Bool)
 interpretStmts (stmt:stmts) = do
   aux@(env, mval, breakBit, contBit) <- interpretStmt stmt
   if breakBit || contBit || isJust mval then

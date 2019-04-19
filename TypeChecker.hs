@@ -12,7 +12,7 @@ import TypeCheckerUtils
 
 
 {- expression checking -}
-inferType :: Expr -> StaticCheckMonad MockType
+inferType :: Expr -> TypeCheckerMonad MockType
 inferType ELitTrue = return MockBool
 
 inferType ELitFalse = return MockBool
@@ -85,7 +85,7 @@ inferType (EApp ident exprs) = do
       return $ typeToMockType retType
     _                      -> throwError $ BadIdentifier ident
 
-checkArgs :: [Arg] -> [Expr] -> StaticCheckMonad ()
+checkArgs :: [Arg] -> [Expr] -> TypeCheckerMonad ()
 checkArgs ((ArgVal argType _):args) (expr:exprs) = do
   exprType <- inferType expr
   let expectedType = typeToMockType argType
@@ -107,7 +107,7 @@ checkArgs _ _ = throwError BadReferenceArg
 
 
 {- statement checking -}
-checkStmt :: Stmt -> StaticCheckMonad Env
+checkStmt :: Stmt -> TypeCheckerMonad Env
 checkStmt Empty = do
   (env, _, _) <- ask
   return env
@@ -215,7 +215,7 @@ checkStmt (BStmt (Block stmts)) = do
   checkStmts stmts
   return env
 
-checkStmts :: [Stmt] -> StaticCheckMonad Env
+checkStmts :: [Stmt] -> TypeCheckerMonad Env
 checkStmts (stmt:stmts) = do
   (_, isLoop, retType) <- ask
   env <- checkStmt stmt
