@@ -41,7 +41,13 @@ instance Show RuntimeError where
   show (MissingReturn (Ident ident)) = "Execution of function " ++ ident ++ " finished with no return"
   show ZeroDivision          = "Division by zero appeared during program exection"
 
-
+{-
+  monad for the context of interpreting code in JPP
+  we enrich the IO monad w/ the usage of transformers with the following stuff:
+  * possibility to throw runtime errors (using ExceptT transformer)
+  * read&write store which maps locations to actual values (using StateT transformer)
+  * read-only environment which maps identifiers to locations (using ReaderT transformer)
+-}
 type InterpreterMonad = ReaderT Env (StateT Store (ExceptT RuntimeError IO))
 
 {- accessor for new free location (we don't free the redundant ones) -}

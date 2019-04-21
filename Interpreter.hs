@@ -1,4 +1,4 @@
-{- quick & dirty interpreter (most magic happens here) -}
+{- interpreter implementation (most of the magic happens here) -}
 module Interpreter where
 
 

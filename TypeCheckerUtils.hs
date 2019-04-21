@@ -27,7 +27,7 @@ instance Show StaticCheckError where
   show BadReferenceArg                = "Reference function argument not passed as a variable"
   show (BadArgType e a)               = "Incorrect argument type in function application (expected: " ++ show e ++ ", actual: " ++ show a ++ ")"
   show (BadReturnType e a)            = "Return type mismatch (expected: " ++ show e ++ ", actual: " ++ show a ++ ")"
-  show (BadVarDecl (Ident ident) e a) = "RHS of " ++ ident ++ " variable declaration is not " ++ show e ++ " (actual: " ++ show a ++ ")"
+  show (BadVarDecl (Ident ident) e a) = "RHS of variable " ++ ident ++ " declaration is not of type " ++ show e ++ " (actual: " ++ show a ++ ")"
   show (BadIdentifier (Ident ident))  = "Unknown identifier " ++ ident
   show ExpressionNotBoolean           = "Condition expression inside if/while statement is not boolean"
   show BadBreak                       = "\"break\" statement outside of the loop"
