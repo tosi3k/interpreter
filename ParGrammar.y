@@ -30,24 +30,30 @@ import ErrM
   '==' { PT _ (TS _ 15) }
   '>' { PT _ (TS _ 16) }
   '>=' { PT _ (TS _ 17) }
-  'bool' { PT _ (TS _ 18) }
-  'break' { PT _ (TS _ 19) }
-  'continue' { PT _ (TS _ 20) }
-  'else' { PT _ (TS _ 21) }
-  'false' { PT _ (TS _ 22) }
-  'get' { PT _ (TS _ 23) }
-  'if' { PT _ (TS _ 24) }
-  'int' { PT _ (TS _ 25) }
-  'print' { PT _ (TS _ 26) }
-  'ref' { PT _ (TS _ 27) }
-  'return' { PT _ (TS _ 28) }
-  'string' { PT _ (TS _ 29) }
-  'true' { PT _ (TS _ 30) }
-  'tuple' { PT _ (TS _ 31) }
-  'while' { PT _ (TS _ 32) }
-  '{' { PT _ (TS _ 33) }
-  '||' { PT _ (TS _ 34) }
-  '}' { PT _ (TS _ 35) }
+  '[' { PT _ (TS _ 18) }
+  ']' { PT _ (TS _ 19) }
+  'bool' { PT _ (TS _ 20) }
+  'break' { PT _ (TS _ 21) }
+  'continue' { PT _ (TS _ 22) }
+  'else' { PT _ (TS _ 23) }
+  'emptyList' { PT _ (TS _ 24) }
+  'false' { PT _ (TS _ 25) }
+  'fetch' { PT _ (TS _ 26) }
+  'get' { PT _ (TS _ 27) }
+  'if' { PT _ (TS _ 28) }
+  'int' { PT _ (TS _ 29) }
+  'length' { PT _ (TS _ 30) }
+  'list' { PT _ (TS _ 31) }
+  'print' { PT _ (TS _ 32) }
+  'ref' { PT _ (TS _ 33) }
+  'return' { PT _ (TS _ 34) }
+  'string' { PT _ (TS _ 35) }
+  'true' { PT _ (TS _ 36) }
+  'tuple' { PT _ (TS _ 37) }
+  'while' { PT _ (TS _ 38) }
+  '{' { PT _ (TS _ 39) }
+  '||' { PT _ (TS _ 40) }
+  '}' { PT _ (TS _ 41) }
 
 L_ident  { PT _ (TV $$) }
 L_integ  { PT _ (TI $$) }
@@ -67,6 +73,7 @@ Type : 'int' { AbsGrammar.TInt }
      | 'bool' { AbsGrammar.TBool }
      | 'string' { AbsGrammar.TString }
      | 'tuple' '<' ListType '>' { AbsGrammar.TTuple $3 }
+     | 'list' '<' Type '>' { AbsGrammar.TList $3 }
 ListType :: { [Type] }
 ListType : Type { (:[]) $1 } | Type ',' ListType { (:) $1 $3 }
 Blck :: { Blck }
@@ -106,6 +113,10 @@ Expr6 : Ident { AbsGrammar.EVar $1 }
       | 'false' { AbsGrammar.ELitFalse }
       | Ident '(' ListExpr ')' { AbsGrammar.EApp $1 $3 }
       | '(' ListExpr ')' { AbsGrammar.ETuple $2 }
+      | 'emptyList' '<' Type '>' { AbsGrammar.EEmptyList $3 }
+      | '[' ListExpr ']' { AbsGrammar.EList $2 }
+      | 'length' '(' Expr ')' { AbsGrammar.ELength $3 }
+      | 'fetch' '(' Expr ',' Expr ')' { AbsGrammar.EFetch $3 $5 }
       | 'get' '(' Expr ',' Integer ')' { AbsGrammar.EGet $3 $5 }
       | String { AbsGrammar.EString $1 }
       | '(' Expr ')' { $2 }

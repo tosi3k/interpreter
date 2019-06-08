@@ -24,6 +24,12 @@ data StaticCheckError = BadTypeInExpr
                       | GetIndexOutOfRange
                       | GetExpressionNotATuple
                       | NoPartialOrderForTuples
+                      | LengthArgumentNotAList
+                      | NoPartialOrderForLists
+                      | FetchFirstArgumentNotAList
+                      | FetchSecondArgumentNotAnInt
+                      | FetchFromEmptyList
+                      | BraceListCannotBeEmpty
 
 instance Show StaticCheckError where
   show BadTypeInExpr                  = "Unexpected type in expression evaluation"
@@ -40,24 +46,32 @@ instance Show StaticCheckError where
   show GetIndexOutOfRange             = "'get' index out of range"
   show GetExpressionNotATuple         = "'get' expression not a tuple"
   show NoPartialOrderForTuples        = "Cannot use relational operators other than '==' and '!=' for tuples"
+  show LengthArgumentNotAList         = "'length' argument is not a list"
+  show NoPartialOrderForLists         = "Cannot use relational operators other than '==' and '!=' for lists"
+  show FetchFirstArgumentNotAList     = "'fetch' first argument is not a list"
+  show FetchSecondArgumentNotAnInt    = "'fetch' first argument is not a list"
+  show BraceListCannotBeEmpty         = "Cannot use [] as a notation for an empty list; instead use emptyList<T> where T is a concrete type"
 
 {- mock for identifiers type in our language -}
 data MockType = MockInt
               | MockBool
               | MockString
               | MockTuple [MockType]
+              | MockList MockType
               | MockFun Type [Arg] [Stmt] deriving Eq
 
 instance Show MockType where
   show MockInt               = "int"
   show MockString            = "string"
   show MockBool              = "bool"
+  show (MockList mockType)   = "list<" ++ (show mockType) ++ ">"
   show (MockTuple mockTypes) = "tuple<" ++ (intercalate ", " $ map show mockTypes) ++ ">"
 
 typeToMockType :: Type -> MockType
 typeToMockType TInt              = MockInt
 typeToMockType TBool             = MockBool
 typeToMockType TString           = MockString
+typeToMockType (TList listType)  = MockList $ typeToMockType listType
 typeToMockType (TTuple typeList) = MockTuple $ map typeToMockType typeList
 
 {- environment for type checker holding identifiers defined so far (with their types) -}

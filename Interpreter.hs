@@ -32,6 +32,8 @@ interpretExpr (EAdd expr1 addOp expr2) = do
     (VInt n1, VInt n2)       -> case addOp of
       OpAdd -> return $ VInt $ n1 + n2
       OpSub -> return $ VInt $ n1 - n2
+    (VList vals1, VList vals2) ->
+      return $ VList $ vals1 ++ vals2
 
 interpretExpr (EMul expr1 mulOp expr2) = do
   (VInt val1) <- interpretExpr expr1
@@ -84,6 +86,9 @@ interpretExpr (ERel expr1 relOp expr2) = let
       (VTuple vals1, VTuple vals2) -> case relOp of
         OpEq  -> return $ VBool $ vals1 == vals2
         OpNeq -> return $ VBool $ vals1 /= vals2
+      (VList vals1, VList vals2) -> case relOp of
+        OpEq  -> return $ VBool $ vals1 == vals2
+        OpNeq -> return $ VBool $ vals1 /= vals2
         
 
 interpretExpr (EApp funId exprs) = let
@@ -132,6 +137,27 @@ interpretExpr (ETuple exprs) = do
 interpretExpr (EGet expr index) = do
   VTuple vals <- interpretExpr expr
   return $ vals !! (fromIntegral index)
+
+interpretExpr (ELength expr) = do
+  VList list <- interpretExpr expr
+  return $ VInt $ fromIntegral $ length list
+
+interpretExpr (EFetch listExpr indexExpr) = do
+  VList vals <- interpretExpr listExpr
+  VInt index <- interpretExpr indexExpr
+  let legitIndex = fromIntegral index
+  if legitIndex < 0 || legitIndex >= length vals then
+    throwError FetchIndexOutOfRange
+  else
+    return $ vals !! legitIndex
+
+interpretExpr (EList exprs) = do
+  vals <- forM exprs interpretExpr
+  return $ VList vals
+
+interpretExpr (EEmptyList listType) = do
+  return $ VList []
+
 
 {-
  - output is a 4-tuple containing following information, respectively:
@@ -210,6 +236,7 @@ interpretStmt (VDecl vtype (item:items)) = let
     defaultValue TBool          = VBool False
     defaultValue TString        = VString ""
     defaultValue (TTuple types) = VTuple (map defaultValue types)
+    defaultValue (TList ltype)  = VList []
 
     ident :: Item -> Ident
     ident (Init ident _) = ident

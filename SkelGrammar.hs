@@ -21,6 +21,7 @@ transType x = case x of
   TBool -> failure x
   TString -> failure x
   TTuple types -> failure x
+  TList type_ -> failure x
 transBlck :: Blck -> Result
 transBlck x = case x of
   Block stmts -> failure x
@@ -55,6 +56,10 @@ transExpr x = case x of
   ELitFalse -> failure x
   EApp ident exprs -> failure x
   ETuple exprs -> failure x
+  EEmptyList type_ -> failure x
+  EList exprs -> failure x
+  ELength expr -> failure x
+  EFetch expr1 expr2 -> failure x
   EGet expr integer -> failure x
   EString string -> failure x
   ENeg expr -> failure x

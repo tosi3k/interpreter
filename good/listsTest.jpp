@@ -1,0 +1,29 @@
+list<int> l1 = [1, 2, 3];
+list<int> l2 = [4, 5, 6];
+
+print l1 == [1, 2, 3];
+print l2 == [4, 5, 6];
+print (l1 + l2) == [1, 2, 3, 4, 5, 6];
+
+list<bool> l3 = emptyList<bool>;
+
+print l3 == emptyList<bool>;
+
+print length(l1) == 3;
+print length(l1 + l2) == 6;
+print length(l3) == 0;
+
+print fetch(l1, 0) == 1;
+print fetch(l1, 1) == 2;
+print fetch(l1, 2) == 3;
+
+print fetch(l1 + l2, 3) == 4;
+print fetch(l1 + l2, 4) == 5;
+print fetch(l1 + l2, 5) == 6;
+
+print length(l1 + emptyList<int>) == length(l1);
+
+list<string> ss;
+print ss == emptyList<string>;
+
+print [1, 2, 3] + [2 + 2 * 2] == [1, 2, 3, 6];

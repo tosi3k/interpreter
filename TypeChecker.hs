@@ -4,7 +4,7 @@ module TypeChecker where
 
 import Control.Monad.Except
 import Control.Monad.Reader
-import Data.Map
+import Data.Map hiding (null)
 import Data.Maybe
 
 import AbsGrammar
@@ -48,8 +48,13 @@ inferType (EAdd expr1 addOp expr2) = do
   exprType2 <- inferType expr2
   if exprType1 == MockInt && exprType2 == MockInt then
     return MockInt
-  else if addOp == OpAdd && exprType1 == MockString && exprType2 == MockString then
-    return MockString
+  else if addOp == OpAdd then case (exprType1, exprType2) of
+    (MockString, MockString)         -> return MockString
+    ((MockList t1), (MockList t2))   ->
+      if t1 == t2 then
+        return $ MockList t1
+      else
+        throwError BadTypeInExpr
   else
     throwError BadTypeInExpr
 
@@ -61,6 +66,10 @@ inferType (ERel expr1 relOp expr2) = do
       if elem relOp [OpEq, OpNeq] then
         return MockBool
       else throwError NoPartialOrderForTuples
+    MockList _ ->
+      if elem relOp [OpEq, OpNeq] then
+        return MockBool
+      else throwError NoPartialOrderForLists
     _ -> return MockBool
   else
     throwError BadTypeInExpr
@@ -103,6 +112,35 @@ inferType (EGet expr index) = do
       else
         return $ mockTypes !! legitIndex
     _ -> throwError GetExpressionNotATuple
+
+inferType (EList exprs) =
+  if null exprs then
+    throwError BraceListCannotBeEmpty
+  else do
+    let allTheSame xs = and $ zipWith (==) xs (tail xs)
+    mockTypes <- forM exprs inferType
+    if allTheSame mockTypes then
+      return $ MockList $ head mockTypes
+    else
+      throwError BadTypeInExpr
+
+inferType (EEmptyList listType) =
+  return $ MockList $ typeToMockType listType
+
+inferType (EFetch expr indexExpr) = do
+  index <- inferType indexExpr
+  listType <- inferType expr
+  if index /= MockInt then
+    throwError FetchSecondArgumentNotAnInt
+  else case listType of
+    MockList mockType -> return mockType
+    _                 -> throwError FetchFirstArgumentNotAList
+
+inferType (ELength expr) = do
+  listType <- inferType expr
+  case listType of
+    MockList _    -> return MockInt
+    _             -> throwError LengthArgumentNotAList
 
 checkArgs :: [Arg] -> [Expr] -> TypeCheckerMonad ()
 checkArgs ((ArgVal argType _):args) (expr:exprs) = do

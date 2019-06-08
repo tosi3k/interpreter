@@ -31,6 +31,7 @@ data Value = VInt Integer
            | VBool Bool
            | VString String
            | VTuple [Value]
+           | VList [Value]
            | VFun Function deriving Eq
 
 instance Show Value where
@@ -39,14 +40,16 @@ instance Show Value where
   show (VBool False) = "false"
   show (VInt n)      = show n
   show (VTuple vals) = "(" ++ (intercalate ", " $ map show vals) ++ ")"
+  show (VList vals)  = "[" ++ (intercalate ", " $ map show vals) ++ "]"
   show (VFun f)      = show f
 
 {- types of errors one can detect during program interpretation -}
-data RuntimeError = MissingReturn Ident | ZeroDivision
+data RuntimeError = MissingReturn Ident | ZeroDivision | FetchIndexOutOfRange
 
 instance Show RuntimeError where
   show (MissingReturn (Ident ident)) = "Execution of function " ++ ident ++ " finished with no return"
   show ZeroDivision                  = "Division by zero appeared during program exection"
+  show FetchIndexOutOfRange          = "Fetch index out of range"
 
 {-
   monad for the context of interpreting code in JPP
