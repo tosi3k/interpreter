@@ -26,4 +26,38 @@ print length(l1 + emptyList<int>) == length(l1);
 list<string> ss;
 print ss == emptyList<string>;
 
-print [1, 2, 3] + [2 + 2 * 2] == [1, 2, 3, 6];
+
+int fib(int n) {
+    if (n <= 1) {
+        return 1;
+    } else {
+        return fib(n - 1) + fib(n - 2);
+    }
+}
+
+print [1, 2, 3] + [2 * 2, fib(4), 2 + 2 * 2] == [1, 2, 3, 4, 5, 6];
+
+
+
+list<int> a = emptyList<int>;
+int i = 0;
+
+while (i < 5) {
+    a = a + [i];
+    i = i + 1;
+}
+
+print a == [0, 1, 2, 3, 4];
+
+// lists with tuples with lists test
+list<tuple<int, list<int>>> a = [(3, [3, 2, 1, 0]),
+                                 (2, [2, 1, 0]),
+                                 (1, [1, 0]),
+                                 (0, [0]),
+                                 (-1, emptyList<int>)];
+
+print a == [(3, [3, 2, 1, 0]),
+            (2, [2, 1, 0]),
+            (1, [1, 0]),
+            (0, [0]),
+            (-1, emptyList<int>)];

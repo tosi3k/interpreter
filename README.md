@@ -52,7 +52,7 @@ A program in JPP language is a sequence of statements. Statement can be of eithe
 ### Expressions
 
 Each expression can have a type equal to `int`, `bool` or `string` corresponding to integer, boolean and string types in other programming languages. Apart from simple literals for the listed types (`42`, `false`, `"Hello World!"`) and variables used as values in expressions, JPP handles the basic arithmetic on integers (summation, subtraction, multiplication, division) with natural syntax (*+*, *-*, *\**, */*), basic  as well as the concatenation of strings (with *+* being the infix concatenation operator). Logical operators for boolean expressions are handled as well (`&&`, `||` and `!` - prefix negation; the logical conjunction and disjunctions are evaluated in a lazy way). There are also relative operators defined for all of the types (`==`, `>`, `<`, `<=`, `>=`, `!=`) corresponding to the natural linear order for integers, natural linear order for booleans and natural lexicographical order for strings. Applications of the functions serve as the expressions as well.
-Tuples are supported as well and they are described further on.
+Tuples and lists are supported as well and they are described further on.
 Any type mismatch would result in an error detected during static program analysis step
 
 ### `print`
@@ -71,18 +71,42 @@ tuple<int, string> coords1, coords2 = (3, "hello");
 print coords1; // prints (0, "") to standard output
 print coords2; // prints (3, "hello") to standard output
 ```
+In case of lists we support the following syntax for variable definitions and default values:
+```
+list<int> list1, list2 = [1, 2, 3];
+print list1; // prints [] to stdout
+print list2; // prints [1, 2, 3] to stdout
+```
+You can mix lists and tuples however you want (meaning you can have lists of tuples of tuples of lists etc., _ad infinitum_), e.g.:
+```
+list<tuple<int, list<int>>> a = [(3, [3, 2, 1, 0]),
+                                 (2, [2, 1, 0]),
+                                 (1, [1, 0]),
+                                 (0, [0])];
+print get(fetch(a, 2), 1);
+// prints out [1, 0]; take a look at lists' `fetch` and tuples' `get` instructions for further details
+```
 
 ### Value assignment to variables
 
 Variable wouldn't be called a variable if one couldn't assing different values to it. The syntax is self-explanatory:
 ```
 int x;
-tuple<int, string> y
 x = 42;
 print x; // prints 42 to standard output
+
+tuple<int, string> y;
 y = (x, "Hello world");
 print y; // prints (42, "Hello world") to standard output
+
+list<int> z;
+print z; // prints [] to standard output
+z = [1, 2, 3];
+print z; // prints [1, 2, 3] to standard output
+z = emptyList<int>;
+print z; // prints [] to standard output
 ```
+You *cannot* use ```[]``` as a notation for an empty list in JPP language - the brackets ought to contain at least one value. Instead, we denote an empty list of a concrete type ```T``` by ```emptyList<T>``` which is an expression in JPP language you can bind to a variable or use in comparisons 
 
 ### Accessing tuple member values
 
@@ -95,6 +119,49 @@ print get(xyz, 1);         // prints out (2, 3)
 print get(get(xyz, 1), 0); // prints out 2
 print get(get(xyz, 1), 1); // prints out 3
 print get((3, 4), 1);      // prints out 4
+```
+
+### Lists concatenation
+
+Just put a `+` between lists of the same type (if types aren't the same, you will end up with a static check error):
+```
+list<int> l1 = [1, 2, 3];
+list<int> l2 = [4, 5, 6];
+
+print l1 + l2; // prints out [1, 2, 3, 4, 5, 6] to stdout
+```
+
+### Accessing list member values
+
+We can access individual list values of a tuple using `fetch` instruction. `fetch` behaves like a function working on lists where the first argument is a tuple value and a second one is the index of the requested tuple member. The index must be an expression evaluating to a nonnegative integer less than the number of members of a tuple (otherwise you would end up with a runtime error). Syntax:
+```
+list<int> l1 = [1, 2, 3];
+list<int> l2 = [4, 5, 6];
+
+print fetch(l1, 0); // prints out 1 to stdout
+print fetch(l1, 1); // prints out 2 to stdout
+print fetch(l1, 2); // prints out 3 to stdout
+
+print fetch(l1 + l2, 3); // prints out 4 to stdout
+print fetch(l1 + l2, 4); // prints out 5 to stdout
+print fetch(l1 + l2, 5); // prints out 6 to stdout
+```
+
+### List length
+
+Syntax:
+```
+list<int> l1 = [1, 2, 3];
+list<int> l2 = [4, 5, 6];
+
+print length(l1); // prints out 3 to stdout
+print length(l1 + l2); // prints out 6 to stdout
+```
+You can bind list length to an integer variable:
+```
+list<int> l = [1,2,3,4,5];
+int len = length(l);
+print len; // prints out 5 to stdout
 ```
 
 ### Function definition

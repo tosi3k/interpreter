@@ -28,7 +28,6 @@ data StaticCheckError = BadTypeInExpr
                       | NoPartialOrderForLists
                       | FetchFirstArgumentNotAList
                       | FetchSecondArgumentNotAnInt
-                      | FetchFromEmptyList
                       | BraceListCannotBeEmpty
 
 instance Show StaticCheckError where
@@ -49,7 +48,7 @@ instance Show StaticCheckError where
   show LengthArgumentNotAList         = "'length' argument is not a list"
   show NoPartialOrderForLists         = "Cannot use relational operators other than '==' and '!=' for lists"
   show FetchFirstArgumentNotAList     = "'fetch' first argument is not a list"
-  show FetchSecondArgumentNotAnInt    = "'fetch' first argument is not a list"
+  show FetchSecondArgumentNotAnInt    = "'fetch' second argument is not an integer"
   show BraceListCannotBeEmpty         = "Cannot use [] as a notation for an empty list; instead use emptyList<T> where T is a concrete type"
 
 {- mock for identifiers type in our language -}
