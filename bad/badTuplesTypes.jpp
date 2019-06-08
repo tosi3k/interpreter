@@ -1,0 +1,4 @@
+tuple<int, int> a = (1, 0);
+tuple<int, bool> b = (1, false);
+
+print a == b; // types of a and b variables do not match hence type checker error

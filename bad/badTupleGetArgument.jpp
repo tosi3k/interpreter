@@ -1,0 +1,3 @@
+int x = 0;
+
+print get(x, 0); // first argument of 'get' is not a tuple

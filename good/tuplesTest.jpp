@@ -1,0 +1,38 @@
+tuple<int, bool> a = (1, true);
+
+print a;
+
+tuple<int, int> wrapCoordsIntoTuple(int x, int y) {
+	return (x, y);
+}
+
+tuple<int, int> coords = wrapCoordsIntoTuple(1, 3);
+
+print coords;
+
+int x = get(coords, 0);
+int y = get(coords, 1);
+
+print (x, y) == coords;
+
+print (x, 0) != coords;
+
+
+tuple<int, tuple<bool, string>> moreComplicatedWrap(int x, bool y, string z) {
+	return (x, (y, z));
+}
+
+string s = "xD";
+
+print moreComplicatedWrap(1, true, s) == (1, (true, s));
+
+tuple<int, tuple<int, int>> xyz = (1, (2, 3));
+
+print get(xyz, 0) == 1;
+print get(xyz, 1) == (2, 3);
+print get(get(xyz, 1), 0) == 2;
+print get(get(xyz, 1), 1) == 3;
+
+tuple<int, string> coords1, coords2 = (3, "hello");
+print coords1; // prints (0, "") to standard output
+print coords2; // prints (3, "hello") to standard output
