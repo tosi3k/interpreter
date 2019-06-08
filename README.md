@@ -51,7 +51,8 @@ A program in JPP language is a sequence of statements. Statement can be of eithe
 
 ### Expressions
 
-Each expression has a type equal to `int`, `bool` or `string` corresponding to integer, boolean and string types in other programming languages. Apart from simple literals for the listed types (`42`, `false`, `"Hello World!"`) and variables used as values in expressions, JPP handles the basic arithmetic on integers (summation, subtraction, multiplication, division) with natural syntax (*+*, *-*, *\**, */*), basic  as well as the concatenation of strings (with *+* being the infix concatenation operator). Logical operators for boolean expressions are handled as well (`&&`, `||` and `!` - prefix negation; the logical conjunction and disjunctions are evaluated in a lazy way). There are also relative operators defined for all of the types (`==`, `>`, `<`, `<=`, `>=`, `!=`) corresponding to the natural linear order for integers, natural linear order for booleans and natural lexicographical order for strings. Applications of the functions serve as the expressions as well.
+Each expression can have a type equal to `int`, `bool` or `string` corresponding to integer, boolean and string types in other programming languages. Apart from simple literals for the listed types (`42`, `false`, `"Hello World!"`) and variables used as values in expressions, JPP handles the basic arithmetic on integers (summation, subtraction, multiplication, division) with natural syntax (*+*, *-*, *\**, */*), basic  as well as the concatenation of strings (with *+* being the infix concatenation operator). Logical operators for boolean expressions are handled as well (`&&`, `||` and `!` - prefix negation; the logical conjunction and disjunctions are evaluated in a lazy way). There are also relative operators defined for all of the types (`==`, `>`, `<`, `<=`, `>=`, `!=`) corresponding to the natural linear order for integers, natural linear order for booleans and natural lexicographical order for strings. Applications of the functions serve as the expressions as well.
+Tuples are supported as well and they are described further on.
 Any type mismatch would result in an error detected during static program analysis step
 
 ### `print`
@@ -64,14 +65,36 @@ Variables definition syntax is almost the same as in other *C-like* languages, f
 ```
 int x = 5, y, z = 2 + x;
 ```
-would result in defining integer variables `x`, `y` and `z` equal to `5`, `0` and `7`, respectively. Observe the default value for integers being `0` - the analogous stuff happens in case of `bool` and `string` types where the default values are respectively `false` and `""` (empty string).
+would result in defining integer variables `x`, `y` and `z` equal to `5`, `0` and `7`, respectively. Observe the default value for integers being `0` - the analogous stuff happens in case of `bool` and `string` types where the default values are respectively `false` and `""` (empty string). In case of tuples we support the following syntax for variable definitions and default values:
+```
+tuple<int, string> coords1, coords2 = (3, "hello");
+print coords1; // prints (0, "") to standard output
+print coords2; // prints (3, "hello") to standard output
+```
 
 ### Value assignment to variables
 
 Variable wouldn't be called a variable if one couldn't assing different values to it. The syntax is self-explanatory:
 ```
-int x = 42;
+int x;
+tuple<int, string> y
+x = 42;
 print x; // prints 42 to standard output
+y = (x, "Hello world");
+print y; // prints (42, "Hello world") to standard output
+```
+
+### Accessing tuple member values
+
+We can access individual member values of a tuple using `get` instruction. `get` behaves like a function working on tuples where the first argument is a tuple value and a second one is the index of the requested tuple member. The index *must* be a nonnegative constant integer less than the number of members of a tuple. Syntax:
+```
+tuple<int, tuple<int, int>> xyz = (1, (2, 3));
+
+print get(xyz, 0);         // prints out 1
+print get(xyz, 1);         // prints out (2, 3)
+print get(get(xyz, 1), 0); // prints out 2
+print get(get(xyz, 1), 1); // prints out 3
+print get((3, 4), 1);      // prints out 4
 ```
 
 ### Function definition

@@ -4,7 +4,8 @@ module TypeCheckerUtils where
 
 import Control.Monad.Except
 import Control.Monad.Reader
-import Data.Map
+import Data.Map hiding (map)
+import Data.List (intercalate)
 
 import AbsGrammar
 
@@ -20,6 +21,9 @@ data StaticCheckError = BadTypeInExpr
                       | BadBreak
                       | BadContinue
                       | ReturnOutsideOfFunction
+                      | GetIndexOutOfRange
+                      | GetExpressionNotATuple
+                      | NoPartialOrderForTuples
 
 instance Show StaticCheckError where
   show BadTypeInExpr                  = "Unexpected type in expression evaluation"
@@ -33,22 +37,28 @@ instance Show StaticCheckError where
   show BadBreak                       = "\"break\" statement outside of the loop"
   show BadContinue                    = "\"continue\" statement outside of the loop"
   show ReturnOutsideOfFunction        = "\"return\" statement outside of the function declaration"
+  show GetIndexOutOfRange             = "'get' index out of range"
+  show GetExpressionNotATuple         = "'get' expression not a tuple"
+  show NoPartialOrderForTuples        = "Cannot use relational operators other than '==' and '!=' for tuples"
 
 {- mock for identifiers type in our language -}
 data MockType = MockInt
               | MockBool
               | MockString
+              | MockTuple [MockType]
               | MockFun Type [Arg] [Stmt] deriving Eq
 
 instance Show MockType where
-  show MockInt = "int"
-  show MockString = "string"
-  show MockBool = "bool"
+  show MockInt               = "int"
+  show MockString            = "string"
+  show MockBool              = "bool"
+  show (MockTuple mockTypes) = "tuple<" ++ (intercalate ", " $ map show mockTypes) ++ ">"
 
 typeToMockType :: Type -> MockType
-typeToMockType TInt = MockInt
-typeToMockType TBool = MockBool
-typeToMockType TString = MockString
+typeToMockType TInt              = MockInt
+typeToMockType TBool             = MockBool
+typeToMockType TString           = MockString
+typeToMockType (TTuple typeList) = MockTuple $ map typeToMockType typeList
 
 {- environment for type checker holding identifiers defined so far (with their types) -}
 type Env = Map Ident MockType

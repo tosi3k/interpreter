@@ -3,7 +3,7 @@ module Interpreter where
 
 
 import Data.Maybe
-import Data.Map
+import Data.Map hiding (map)
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
@@ -81,6 +81,10 @@ interpretExpr (ERel expr1 relOp expr2) = let
       (VInt a, VInt b) -> return $ VBool $ evalOp relOp a b
       (VString a, VString b) -> return $ VBool $ evalOp relOp a b
       (VBool a, VBool b) -> return $ VBool $ evalOp relOp a b
+      (VTuple vals1, VTuple vals2) -> case relOp of
+        OpEq  -> return $ VBool $ vals1 == vals2
+        OpNeq -> return $ VBool $ vals1 /= vals2
+        
 
 interpretExpr (EApp funId exprs) = let
     {- supply environment with new argument passed by reference -}
@@ -121,6 +125,13 @@ interpretExpr (EApp funId exprs) = let
       Nothing -> throwError $ MissingReturn funId
       Just val -> return val
 
+interpretExpr (ETuple exprs) = do
+  vals <- forM exprs interpretExpr
+  return $ VTuple vals
+
+interpretExpr (EGet expr index) = do
+  VTuple vals <- interpretExpr expr
+  return $ vals !! (fromIntegral index)
 
 {-
  - output is a 4-tuple containing following information, respectively:
@@ -195,9 +206,10 @@ interpretStmt (VDecl _ []) = do
   return (env, Nothing, False, False)
 interpretStmt (VDecl vtype (item:items)) = let
     defaultValue :: Type -> Value
-    defaultValue TInt = VInt 0
-    defaultValue TBool = VBool False
-    defaultValue TString = VString ""
+    defaultValue TInt           = VInt 0
+    defaultValue TBool          = VBool False
+    defaultValue TString        = VString ""
+    defaultValue (TTuple types) = VTuple (map defaultValue types)
 
     ident :: Item -> Ident
     ident (Init ident _) = ident

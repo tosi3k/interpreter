@@ -1,0 +1,3 @@
+tuple<int, int> a, b;
+
+print a <= b; // cannot compare tuples that way...

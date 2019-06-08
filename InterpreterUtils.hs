@@ -5,8 +5,9 @@ module InterpreterUtils where
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Map
+import Data.Map hiding (map)
 import Data.Maybe
+import Data.List hiding (insert)
 
 import AbsGrammar
 
@@ -26,20 +27,26 @@ type Store = Map Location Value
 type Function = (Type, [Arg], [Stmt], Env)
 
 {- representation of values in our runtime -}
-data Value = VInt Integer | VBool Bool | VString String | VFun Function
+data Value = VInt Integer
+           | VBool Bool
+           | VString String
+           | VTuple [Value]
+           | VFun Function deriving Eq
 
 instance Show Value where
-  show (VString s) = s
-  show (VBool b)   = show b
-  show (VInt n)    = show n
-  show (VFun f)    = show f
+  show (VString s)   = show s
+  show (VBool True)  = "true"
+  show (VBool False) = "false"
+  show (VInt n)      = show n
+  show (VTuple vals) = "(" ++ (intercalate ", " $ map show vals) ++ ")"
+  show (VFun f)      = show f
 
 {- types of errors one can detect during program interpretation -}
 data RuntimeError = MissingReturn Ident | ZeroDivision
 
 instance Show RuntimeError where
   show (MissingReturn (Ident ident)) = "Execution of function " ++ ident ++ " finished with no return"
-  show ZeroDivision          = "Division by zero appeared during program exection"
+  show ZeroDivision                  = "Division by zero appeared during program exection"
 
 {-
   monad for the context of interpreting code in JPP

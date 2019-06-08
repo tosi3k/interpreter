@@ -92,7 +92,9 @@ instance Print Type where
     TInt -> prPrec i 0 (concatD [doc (showString "int")])
     TBool -> prPrec i 0 (concatD [doc (showString "bool")])
     TString -> prPrec i 0 (concatD [doc (showString "string")])
-
+    TTuple types -> prPrec i 0 (concatD [doc (showString "tuple"), doc (showString "<"), prt 0 types, doc (showString ">")])
+  prtList _ [x] = (concatD [prt 0 x])
+  prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])
 instance Print Blck where
   prt i e = case e of
     Block stmts -> prPrec i 0 (concatD [doc (showString "{"), prt 0 stmts, doc (showString "}")])
@@ -134,6 +136,8 @@ instance Print Expr where
     ELitTrue -> prPrec i 6 (concatD [doc (showString "true")])
     ELitFalse -> prPrec i 6 (concatD [doc (showString "false")])
     EApp id exprs -> prPrec i 6 (concatD [prt 0 id, doc (showString "("), prt 0 exprs, doc (showString ")")])
+    ETuple exprs -> prPrec i 6 (concatD [doc (showString "("), prt 0 exprs, doc (showString ")")])
+    EGet expr n -> prPrec i 6 (concatD [doc (showString "get"), doc (showString "("), prt 0 expr, doc (showString ","), prt 0 n, doc (showString ")")])
     EString str -> prPrec i 6 (concatD [prt 0 str])
     ENeg expr -> prPrec i 5 (concatD [doc (showString "-"), prt 6 expr])
     ENot expr -> prPrec i 5 (concatD [doc (showString "!"), prt 6 expr])

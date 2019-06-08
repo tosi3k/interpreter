@@ -35,17 +35,19 @@ import ErrM
   'continue' { PT _ (TS _ 20) }
   'else' { PT _ (TS _ 21) }
   'false' { PT _ (TS _ 22) }
-  'if' { PT _ (TS _ 23) }
-  'int' { PT _ (TS _ 24) }
-  'print' { PT _ (TS _ 25) }
-  'ref' { PT _ (TS _ 26) }
-  'return' { PT _ (TS _ 27) }
-  'string' { PT _ (TS _ 28) }
-  'true' { PT _ (TS _ 29) }
-  'while' { PT _ (TS _ 30) }
-  '{' { PT _ (TS _ 31) }
-  '||' { PT _ (TS _ 32) }
-  '}' { PT _ (TS _ 33) }
+  'get' { PT _ (TS _ 23) }
+  'if' { PT _ (TS _ 24) }
+  'int' { PT _ (TS _ 25) }
+  'print' { PT _ (TS _ 26) }
+  'ref' { PT _ (TS _ 27) }
+  'return' { PT _ (TS _ 28) }
+  'string' { PT _ (TS _ 29) }
+  'true' { PT _ (TS _ 30) }
+  'tuple' { PT _ (TS _ 31) }
+  'while' { PT _ (TS _ 32) }
+  '{' { PT _ (TS _ 33) }
+  '||' { PT _ (TS _ 34) }
+  '}' { PT _ (TS _ 35) }
 
 L_ident  { PT _ (TV $$) }
 L_integ  { PT _ (TI $$) }
@@ -64,6 +66,9 @@ Type :: { Type }
 Type : 'int' { AbsGrammar.TInt }
      | 'bool' { AbsGrammar.TBool }
      | 'string' { AbsGrammar.TString }
+     | 'tuple' '<' ListType '>' { AbsGrammar.TTuple $3 }
+ListType :: { [Type] }
+ListType : Type { (:[]) $1 } | Type ',' ListType { (:) $1 $3 }
 Blck :: { Blck }
 Blck : '{' ListStmt '}' { AbsGrammar.Block (reverse $2) }
 ListStmt :: { [Stmt] }
@@ -100,6 +105,8 @@ Expr6 : Ident { AbsGrammar.EVar $1 }
       | 'true' { AbsGrammar.ELitTrue }
       | 'false' { AbsGrammar.ELitFalse }
       | Ident '(' ListExpr ')' { AbsGrammar.EApp $1 $3 }
+      | '(' ListExpr ')' { AbsGrammar.ETuple $2 }
+      | 'get' '(' Expr ',' Integer ')' { AbsGrammar.EGet $3 $5 }
       | String { AbsGrammar.EString $1 }
       | '(' Expr ')' { $2 }
 Expr5 :: { Expr }

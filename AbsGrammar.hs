@@ -11,7 +11,7 @@ newtype Ident = Ident String deriving (Eq, Ord, Show, Read)
 data Program = Prog [Stmt]
   deriving (Eq, Ord, Show, Read)
 
-data Type = TInt | TBool | TString
+data Type = TInt | TBool | TString | TTuple [Type]
   deriving (Eq, Ord, Show, Read)
 
 data Blck = Block [Stmt]
@@ -45,6 +45,8 @@ data Expr
     | ELitTrue
     | ELitFalse
     | EApp Ident [Expr]
+    | ETuple [Expr]
+    | EGet Expr Integer
     | EString String
     | ENeg Expr
     | ENot Expr

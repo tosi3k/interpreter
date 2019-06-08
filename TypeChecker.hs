@@ -56,8 +56,12 @@ inferType (EAdd expr1 addOp expr2) = do
 inferType (ERel expr1 relOp expr2) = do
   exprType1 <- inferType expr1
   exprType2 <- inferType expr2
-  if exprType1 == exprType2 then
-    return MockBool
+  if exprType1 == exprType2 then case exprType1 of
+    MockTuple _ ->
+      if elem relOp [OpEq, OpNeq] then
+        return MockBool
+      else throwError NoPartialOrderForTuples
+    _ -> return MockBool
   else
     throwError BadTypeInExpr
 
@@ -84,6 +88,21 @@ inferType (EApp ident exprs) = do
       checkArgs args exprs
       return $ typeToMockType retType
     _                      -> throwError $ BadIdentifier ident
+
+inferType (ETuple exprs) = do
+  mockTypes <- forM exprs inferType
+  return $ MockTuple mockTypes
+
+inferType (EGet expr index) = do
+  let legitIndex = fromIntegral index
+  tupleType <- inferType expr
+  case tupleType of
+    MockTuple mockTypes ->
+      if legitIndex < 0 || legitIndex >= (length mockTypes) then
+        throwError GetIndexOutOfRange
+      else
+        return $ mockTypes !! legitIndex
+    _ -> throwError GetExpressionNotATuple
 
 checkArgs :: [Arg] -> [Expr] -> TypeCheckerMonad ()
 checkArgs ((ArgVal argType _):args) (expr:exprs) = do

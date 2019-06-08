@@ -33,16 +33,16 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 
 The reserved words used in grammar are the following:
   | ``bool`` | ``break`` | ``continue`` | ``else``
-  | ``false`` | ``if`` | ``int`` | ``print``
-  | ``ref`` | ``return`` | ``string`` | ``true``
-  | ``while`` |  |  | 
+  | ``false`` | ``get`` | ``if`` | ``int``
+  | ``print`` | ``ref`` | ``return`` | ``string``
+  | ``true`` | ``tuple`` | ``while`` | 
 
 The symbols used in grammar are the following:
-  | { | } | ; | (
-  | ) | , | = | -
-  | ! | && | || | +
-  | * | / | < | <=
-  | > | >= | == | !=
+  | < | > | , | {
+  | } | ; | ( | )
+  | = | - | ! | &&
+  | || | + | * | /
+  | <= | >= | == | !=
 
 ===Comments===
 Single-line comments begin with //.Multiple-line comments are  enclosed with /* and */.
@@ -57,6 +57,9 @@ All other symbols are terminals.
   | //Type// | -> | ``int`` 
   |  |  **|**  | ``bool`` 
   |  |  **|**  | ``string`` 
+  |  |  **|**  | ``tuple`` ``<`` //[Type]// ``>`` 
+  | //[Type]// | -> | //Type// 
+  |  |  **|**  | //Type// ``,`` //[Type]// 
   | //Blck// | -> | ``{`` //[Stmt]// ``}`` 
   | //[Stmt]// | -> | **eps**
   |  |  **|**  | //Stmt// //[Stmt]// 
@@ -87,6 +90,8 @@ All other symbols are terminals.
   |  |  **|**  | ``true`` 
   |  |  **|**  | ``false`` 
   |  |  **|**  | //Ident// ``(`` //[Expr]// ``)`` 
+  |  |  **|**  | ``(`` //[Expr]// ``)`` 
+  |  |  **|**  | ``get`` ``(`` //Expr// ``,`` //Integer// ``)`` 
   |  |  **|**  | //String// 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //Expr5// | -> | ``-`` //Expr6// 
